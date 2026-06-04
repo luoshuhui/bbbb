@@ -137,12 +137,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             src={iframeSrc}
             referrerPolicy="strict-origin-when-cross-origin"
             className="aspect-video w-full rounded-md bg-black object-cover"
+            {...(IN_ELECTRON ? { useragent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" } : {})}
           />
         ) : miniIframeSrc && showPreview ? (
           <ViewTag
             src={miniIframeSrc}
             referrerPolicy="strict-origin-when-cross-origin"
             className="pointer-events-none aspect-video w-full rounded-md bg-black object-cover"
+            {...(IN_ELECTRON ? { useragent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" } : {})}
           />
         ) : entry.firstMedia ? (
           <Media
@@ -216,7 +218,11 @@ const PreviewVideoModalContent: ModalContentComponent<{
         <FixedModalCloseButton onClick={dismiss} />
       </m.div>
 
-      <ViewTag src={src} className="size-full" />
+      <ViewTag 
+        src={src} 
+        className="size-full" 
+        {...(IN_ELECTRON ? { useragent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" } : {})} 
+      />
       {!!content && (
         <div className="bg-background p-10 pt-5 backdrop-blur-sm">
           <HTML

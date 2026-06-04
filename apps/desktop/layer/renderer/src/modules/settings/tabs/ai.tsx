@@ -11,7 +11,6 @@ import { PanelStyleSection } from "./ai/PanelStyleSection"
 import { PersonalizePromptSection } from "./ai/PersonalizePromptSection"
 import { AIShortcutsSection } from "./ai/shortcuts/AIShortcutsSection"
 import { TaskSchedulingSection } from "./ai/tasks"
-import { UsageAnalysisSection } from "./ai/usage"
 
 const SettingBuilder = createSettingBuilder(useAISettingValue)
 const defineSettingItem = createDefineSettingItem("ai", useAISettingValue, setAISetting)
@@ -77,12 +76,6 @@ export const SettingAI = () => {
           },
           ByokSection,
 
-          {
-            type: "title",
-            value: t("usage_analysis.title"),
-          },
-          UsageAnalysisSection,
-          AISecurityDisclosureSection,
         ]}
       />
     </div>

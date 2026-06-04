@@ -5,7 +5,9 @@ import { useUserRole } from "@follow/store/user/hooks"
 import type { FC } from "react"
 import { memo } from "react"
 
+import { useAISettingKey } from "~/atoms/settings/ai"
 import { useActionLanguage, useGeneralSettingKey } from "~/atoms/settings/general"
+import { useShowAITranslationOnce } from "~/atoms/ai-translation"
 
 import { getItemComponentByView } from "./Items/getItemComponentByView"
 import { EntryItemWrapper } from "./layouts/EntryItemWrapper"
@@ -23,11 +25,13 @@ const EntryItemImpl = memo(function EntryItemImpl({
   currentFeedTitle,
   isFirstItem,
 }: EntryItemProps) {
-  const enableTranslation = useGeneralSettingKey("translation")
+  const enableTranslation = useShowAITranslationOnce()
   const translationMode = useGeneralSettingKey("translationMode")
   const actionLanguage = useActionLanguage()
   const userRole = useUserRole()
-  const shouldPrefetchTranslation = enableTranslation && !isFreeRole(userRole)
+  const byok = useAISettingKey("byok")
+  const hasByok = byok?.providers && byok.providers.length > 0
+  const shouldPrefetchTranslation = enableTranslation && (!isFreeRole(userRole) || hasByok)
   const translation = useEntryTranslation({
     entryId,
     language: actionLanguage,

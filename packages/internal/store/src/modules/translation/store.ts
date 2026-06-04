@@ -1,4 +1,3 @@
-import { UserRole } from "@follow/constants"
 import type { TranslationSchema } from "@follow/database/schemas/types"
 import { TranslationService } from "@follow/database/services/translation"
 import type { SupportedActionLanguage } from "@follow/shared"
@@ -11,7 +10,6 @@ import type { Hydratable, Resetable } from "../../lib/base"
 import { createImmerSetter, createTransaction, createZustandStore } from "../../lib/helper"
 import { readNdjsonStream } from "../../lib/stream"
 import { getEntry } from "../entry/getter"
-import { useUserStore } from "../user/store"
 import type { EntryTranslation, TranslationFieldArray, TranslationMode } from "./types"
 import { translationFields } from "./types"
 
@@ -88,6 +86,18 @@ class TranslationActions implements Hydratable, Resetable {
 }
 
 export const translationActions = new TranslationActions()
+
+let byokTranslationInterceptor: ((
+  entryId: string,
+  language: SupportedActionLanguage,
+  fields: string[],
+  target: "content" | "readabilityContent",
+  mode: TranslationMode
+) => Promise<Partial<Record<keyof TranslationModel, string | null>> | null>) | null = null
+
+export const setByokTranslationInterceptor = (interceptor: typeof byokTranslationInterceptor) => {
+  byokTranslationInterceptor = interceptor
+}
 
 class TranslationSyncService {
   private currentMode?: TranslationMode
@@ -230,9 +240,6 @@ class TranslationSyncService {
     target: "content" | "readabilityContent"
     mode?: TranslationMode
   }) {
-    const userRole = useUserStore.getState().role
-
-    if (userRole === UserRole.Free) return null
     const translationMode = mode ?? "bilingual"
     await this.ensureMode(translationMode)
 
@@ -256,6 +263,22 @@ class TranslationSyncService {
     })
 
     if (fields.length === 0) return null
+
+    if (byokTranslationInterceptor) {
+      const byokResult = await byokTranslationInterceptor(entryId, language, fields, target, translationMode)
+      if (byokResult) {
+        const translation: TranslationModel = {
+          entryId,
+          language,
+          title: byokResult.title || null,
+          description: byokResult.description || null,
+          content: byokResult.content || null,
+          readabilityContent: byokResult.readabilityContent || null,
+        }
+        await translationActions.upsertMany([translation])
+        return translation
+      }
+    }
 
     const key = `${entryId}|${language}|${target}|${fields.join(",")}|${translationMode}`
     const result = await this.translationBatcher.fetch(key)

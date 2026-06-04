@@ -46,13 +46,9 @@ export const getIsInMASReview = () => {
 }
 
 export const useIsPaymentEnabled = () => {
-  const serverConfigs = useServerConfigs()
-  const isInMASReview = useIsInMASReview()
-  return !isInMASReview && serverConfigs?.PAYMENT_ENABLED
+  return false
 }
 
 export const getIsPaymentEnabled = () => {
-  const serverConfigs = getServerConfigs()
-  const isInMASReview = getIsInMASReview()
-  return !isInMASReview && serverConfigs?.PAYMENT_ENABLED
+  return false
 }

@@ -1,5 +1,3 @@
-import type { UserRole } from "@follow/constants"
-import { UserRolePriority } from "@follow/constants"
 import { useUserRole } from "@follow/store/user/hooks"
 import { cn } from "@follow/utils"
 import { Fragment, memo, useMemo } from "react"
@@ -32,36 +30,7 @@ const providerIcons: Record<ProviderType, string> = {
   moonshotai: "i-mgc-moonshotai-original",
 }
 
-const MODEL_PAID_LEVELS = ["basic", "plus", "pro"] as const
-type ModelPaidLevel = (typeof MODEL_PAID_LEVELS)[number]
 
-const paidLevelPriority: Record<ModelPaidLevel, number> = {
-  basic: 1,
-  plus: 2,
-  pro: 3,
-}
-
-const paidLevelBadgeStyles: Record<ModelPaidLevel, string> = {
-  basic: "border-green/30 bg-green/10 text-green",
-  plus: "border-blue/30 bg-blue/10 text-blue",
-  pro: "border-purple/40 bg-purple/10 text-purple",
-}
-
-const paidLevelLabels: Record<ModelPaidLevel, string> = {
-  basic: "Basic",
-  plus: "Plus",
-  pro: "Pro",
-}
-
-const isModelPaidLevel = (value: unknown): value is ModelPaidLevel => {
-  return typeof value === "string" && MODEL_PAID_LEVELS.includes(value as ModelPaidLevel)
-}
-
-const hasAccessToPaidLevel = (role: UserRole | null | undefined, level?: ModelPaidLevel) => {
-  if (!level) return true
-  const roleScore = role ? (UserRolePriority[role] ?? 0) : 0
-  return roleScore >= paidLevelPriority[level]
-}
 
 const parseModelString = (modelString: string) => {
   if (!modelString || !modelString.includes("/") || modelString === "auto") {
@@ -118,27 +87,19 @@ export const AIModelIndicator = memo(({ className, onModelChange }: AIModelIndic
     </div>
   )
 
-  if (!hasMultipleModels) {
-    return modelContent
-  }
+  // 强制始终渲染 DropdownMenu，允许单模型时也能下拉选择配置
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{modelContent}</DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-48">
-        {availableModelsMenu.map(({ label, value, paidLevel }, index) => {
+        {(availableModelsMenu as any[]).map(({ label, value }, index) => {
           if (value) {
             const { provider: itemProvider, modelName: itemModelName } = parseModelString(value)
             const itemIconClass = providerIcons[itemProvider] || providerIcons.auto
             const isSelected = value === (currentModel || defaultModel)
-            const normalizedPaidLevel = isModelPaidLevel(paidLevel) ? paidLevel : undefined
-            const requiresUpgrade = !hasAccessToPaidLevel(role, normalizedPaidLevel)
 
             const handleModelSelect = () => {
-              if (requiresUpgrade) {
-                settingModalPresent("plan")
-                return
-              }
               changeModel(value)
               onModelChange?.(value)
             }
@@ -146,22 +107,12 @@ export const AIModelIndicator = memo(({ className, onModelChange }: AIModelIndic
             return (
               <DropdownMenuItem
                 key={value}
-                className={cn("gap-2", requiresUpgrade && "text-text-secondary")}
+                className="gap-2"
                 onClick={handleModelSelect}
                 checked={isSelected}
               >
                 <i className={cn("size-3", itemIconClass)} />
                 <span className="truncate">{label || itemModelName}</span>
-                {normalizedPaidLevel && (
-                  <span
-                    className={cn(
-                      "ml-auto inline-flex rounded-full border px-1.5 text-[9px] font-semibold uppercase tracking-wide",
-                      paidLevelBadgeStyles[normalizedPaidLevel],
-                    )}
-                  >
-                    {paidLevelLabels[normalizedPaidLevel]}
-                  </span>
-                )}
               </DropdownMenuItem>
             )
           } else {
@@ -173,6 +124,14 @@ export const AIModelIndicator = memo(({ className, onModelChange }: AIModelIndic
             )
           }
         })}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          className="gap-2 text-text-secondary" 
+          onClick={() => settingModalPresent("ai")}
+        >
+          <i className="i-mgc-settings-3-line size-3" />
+          <span className="truncate">配置模型</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

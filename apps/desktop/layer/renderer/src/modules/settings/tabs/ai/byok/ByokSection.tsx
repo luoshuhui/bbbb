@@ -1,5 +1,12 @@
 import { Button } from "@follow/components/ui/button/index.js"
 import { Label } from "@follow/components/ui/label/index.jsx"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@follow/components/ui/select/index.js"
 import { Switch } from "@follow/components/ui/switch/index.jsx"
 import type { UserByokProviderConfig } from "@follow/shared/settings/interface"
 import { useTranslation } from "react-i18next"
@@ -101,6 +108,15 @@ export const ByokSection = () => {
     }
   }
 
+  const translationModelOptions = byok.providers.flatMap((p) => {
+    const providerName = PROVIDER_OPTIONS.find((opt) => opt.value === p.provider)?.label || p.provider
+    const models = p.models && p.models.length > 0 ? p.models : (p.model ? [p.model] : [])
+    return models.map((m) => ({
+      label: `[${providerName}] ${m}`,
+      value: `${p.provider}::${m}`
+    }))
+  })
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -115,7 +131,36 @@ export const ByokSection = () => {
 
       {byok.enabled && (
         <>
-          <div className="flex items-center justify-between">
+          {translationModelOptions.length > 0 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium text-text">Translation Model</Label>
+                <div className="text-xs text-text-secondary">Specify a specific model ID to use for AI Translation. Leave empty to use the chat model.</div>
+              </div>
+              <Select
+                value={byok.translationModel || "default"}
+                onValueChange={(val) => {
+                  setAISetting("byok", {
+                    ...byok,
+                    translationModel: val === "default" ? null : val,
+                  })
+                }}
+              >
+                <SelectTrigger className="w-[240px]">
+                  <SelectValue placeholder="Use default chat model" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Use default chat model</SelectItem>
+                  {translationModelOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <div className="flex items-center justify-between mt-4">
             <Label className="text-sm font-medium text-text">{t("byok.providers.title")}</Label>
             {byok.providers.length < PROVIDER_OPTIONS.length && (
               <Button variant="outline" size="sm" onClick={handleAddProvider}>

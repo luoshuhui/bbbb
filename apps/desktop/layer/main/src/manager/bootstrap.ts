@@ -43,6 +43,14 @@ export class BootstrapManager {
   }
 
   private static registerAppEvents() {
+    // Modify User-Agent globally to pretend to be a standard Chrome browser.
+    // This prevents websites (e.g. YouTube iframe embeds) from detecting Electron and blocking video playback.
+    app.userAgentFallback = app.userAgentFallback
+      .replace(/folo\/[\d\.]+\s?/gi, "")
+      .replace(/Electron\/[\d\.]+\s?/gi, "")
+
+
+
     app.on("second-instance", (_, commandLine) => {
       const mainWindow = WindowManager.getMainWindow()
       if (mainWindow) {
@@ -78,6 +86,11 @@ export class BootstrapManager {
           url: details.url,
           headers: details.requestHeaders,
         })
+
+        if (details.url.startsWith("wss://speech.platform.bing.com")) {
+          details.requestHeaders["Origin"] = "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold"
+          details.requestHeaders["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+        }
 
         callback({ cancel: false, requestHeaders: details.requestHeaders })
       })

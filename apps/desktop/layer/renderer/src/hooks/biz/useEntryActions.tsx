@@ -1,5 +1,5 @@
 import { isMobile } from "@follow/components/hooks/useMobile.js"
-import { FeedViewType, getView, UserRole } from "@follow/constants"
+import { FeedViewType, getView, UserRole, isFreeRole } from "@follow/constants"
 import { IN_ELECTRON } from "@follow/shared/constants"
 import { useIsEntryStarred } from "@follow/store/collection/hooks"
 import { isOnboardingEntryUrl } from "@follow/store/constants/onboarding"
@@ -21,6 +21,7 @@ import {
   useEntryIsInReadability,
 } from "~/atoms/readability"
 import { useIntegrationSettingValue } from "~/atoms/settings/integration"
+import { useAISettingKey } from "~/atoms/settings/ai"
 import { useShowSourceContent } from "~/atoms/source-content"
 import { ipcServices } from "~/lib/client"
 import { COMMAND_ID } from "~/modules/command/commands/id"
@@ -259,6 +260,8 @@ export const useEntryActions = ({ entryId, view }: { entryId: string; view: Feed
   const hasEntry = !!entry
 
   const userRole = useUserRole()
+  const byok = useAISettingKey("byok")
+  const hasByok = byok?.providers && byok.providers.length > 0
   const integrationSettings = useIntegrationSettingValue()
 
   const shortcuts = useCommandShortcuts()
@@ -372,12 +375,12 @@ export const useEntryActions = ({ entryId, view }: { entryId: string; view: Feed
         id: COMMAND_ID.entry.toggleAITranslation,
         onClick: runCmdFn(COMMAND_ID.entry.toggleAITranslation, []),
         hide:
-          isShowAITranslationAuto ||
+          !isShowAITranslationAuto ||
           ([FeedViewType.SocialMedia, FeedViewType.Videos] as (number | undefined)[]).includes(
             view,
           ),
         active: isShowAITranslationOnce,
-        disabled: userRole === UserRole.Free || userRole === UserRole.Trial,
+        disabled: isFreeRole(userRole) && !hasByok,
         entryId,
       }),
       new EntryActionMenuItem({

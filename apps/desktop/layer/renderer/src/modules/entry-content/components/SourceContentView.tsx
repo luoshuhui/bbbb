@@ -50,6 +50,7 @@ export const SourceContentView = ({ src }: { src: string }) => {
           sandbox="allow-scripts allow-same-origin"
           // For iframe
           onLoad={() => setLoading(false)}
+          {...(IN_ELECTRON ? { useragent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" } : {})}
         />
       </m.div>
     </div>

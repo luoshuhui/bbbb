@@ -199,7 +199,7 @@ const VoiceSelector = () => {
   const { t } = useTranslation("settings")
 
   const { data } = useQuery({
-    queryFn: ({ signal }) => fetchTtsVoices(signal),
+    queryFn: ({ signal }) => fetchTtsVoices(signal, ""),
     queryKey: ["voices"],
     meta: {
       persist: true,

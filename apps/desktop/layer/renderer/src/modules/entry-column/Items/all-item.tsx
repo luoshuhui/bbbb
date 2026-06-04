@@ -306,6 +306,7 @@ function VideoIcon({ src }: { src: string }) {
                 className={cn(
                   "pointer-events-none aspect-video w-[575px] shrink-0 rounded-md bg-black object-cover",
                 )}
+                {...(IN_ELECTRON ? { useragent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" } : {})}
               />
             </div>
           </TooltipContent>

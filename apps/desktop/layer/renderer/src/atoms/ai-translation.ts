@@ -25,7 +25,6 @@ export const useShowAITranslationAuto = (settings?: boolean | null) => {
 }
 
 export const useShowAITranslation = (settings?: boolean | null) => {
-  const showAITranslationAuto = useShowAITranslationAuto(settings)
   const showAITranslationOnce = useShowAITranslationOnce()
-  return showAITranslationAuto || showAITranslationOnce
+  return showAITranslationOnce || !!settings
 }

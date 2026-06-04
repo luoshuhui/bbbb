@@ -20,8 +20,9 @@ export const RateLimitNotice = ({ className, message }: RateLimitNoticeProps) =>
   const isInMASReview = useIsInMASReview()
 
   if (!message || isInMASReview) {
-    return
+    return null
   }
+  return null
 
   return (
     <m.button

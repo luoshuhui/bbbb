@@ -92,6 +92,7 @@ export function VideoItem({ entryId, translation }: UniversalItemProps) {
                 "pointer-events-none aspect-video w-full shrink-0 rounded-md bg-black object-cover",
                 isActive && "rounded-b-none",
               )}
+              {...(IN_ELECTRON ? { useragent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" } : {})}
             />
           ) : entry.firstMedia ? (
             <Media

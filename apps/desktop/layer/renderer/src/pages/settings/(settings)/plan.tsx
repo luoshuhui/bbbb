@@ -10,7 +10,7 @@ export const loader = defineSettingPageData({
   name: "titles.plan.short",
   title: "titles.plan.long",
   priority,
-  hideIf: (ctx, serverConfigs) => ctx.isInMASReview || !serverConfigs?.PAYMENT_ENABLED,
+  hideIf: () => true,
 })
 
 export function Component() {

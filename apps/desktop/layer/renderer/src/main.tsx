@@ -17,8 +17,11 @@ import { ElECTRON_CUSTOM_TITLEBAR_HEIGHT } from "./constants"
 import { initializeApp } from "./initialize"
 import { registerAppGlobalShortcuts } from "./initialize/global-shortcuts"
 import { followApi } from "./lib/api-client"
+import { initByokInterceptors } from "./lib/byok-interceptor"
 import { queryClient } from "./lib/query-client"
 import { router } from "./router"
+
+initByokInterceptors()
 
 authClientContext.provide(authClient)
 queryClientContext.provide(queryClient)

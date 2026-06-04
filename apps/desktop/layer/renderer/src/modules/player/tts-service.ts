@@ -1,7 +1,8 @@
 import type { EntryModel } from "@follow/store/entry/types"
 import { parseHtml } from "@follow/utils/html"
 
-export const TTS_SERVICE_URL = "https://tts.folo.is"
+import { EdgeSpeechTTS } from "~/lib/tts/edge-tts"
+
 export const DEFAULT_TTS_VOICE = "en-US-AvaMultilingualNeural"
 
 export interface TtsVoice {
@@ -9,16 +10,6 @@ export interface TtsVoice {
   Gender: string
   Locale: string
   ShortName: string
-}
-
-interface TtsVoiceResponse {
-  voices: TtsVoice[]
-}
-
-interface TtsErrorResponse {
-  error?: {
-    message?: string
-  }
 }
 
 const normalizeTtsText = (value: string) =>
@@ -47,31 +38,24 @@ export const getEntryTtsText = (
   return [title, body].filter(Boolean).join("\n\n")
 }
 
-const readTtsErrorMessage = async (response: Response) => {
-  try {
-    const data = (await response.clone().json()) as TtsErrorResponse
-    return data?.error?.message || "TTS request failed"
-  } catch {
-    return "TTS request failed"
-  }
-}
+export const fetchTtsVoices = async (signal?: AbortSignal, providedLocalDir?: string) => {
+  const edgeVoices: TtsVoice[] = EdgeSpeechTTS.voices.map((v) => ({
+    FriendlyName: `Edge - ${v.name} (${v.lang})`,
+    ShortName: v.id,
+    Gender: "Unknown",
+    Locale: v.lang,
+  }))
 
-export const fetchTtsVoices = async (signal?: AbortSignal) => {
-  const response = await fetch(`${TTS_SERVICE_URL}/voices`, { signal })
-
-  if (!response.ok) {
-    throw new Error(await readTtsErrorMessage(response))
-  }
-
-  const data = (await response.json()) as TtsVoiceResponse
-  return data.voices ?? []
+  return edgeVoices
 }
 
 export const requestTts = async ({
+  id,
   signal,
   text,
   voice,
 }: {
+  id?: string
   text: string
   voice?: string
   signal?: AbortSignal
@@ -81,23 +65,19 @@ export const requestTts = async ({
     throw new Error("Text is required")
   }
 
-  const normalizedVoice = voice?.trim()
+  const normalizedVoice = voice?.trim() || DEFAULT_TTS_VOICE
 
-  const response = await fetch(`${TTS_SERVICE_URL}/tts`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  // It's Edge TTS
+  try {
+    const voiceInfo = EdgeSpeechTTS.voices.find((v) => v.id === normalizedVoice)
+    const edgeTts = new EdgeSpeechTTS()
+    const url = await edgeTts.createAudioUrl({
       text: normalizedText,
-      ...(normalizedVoice ? { voice: normalizedVoice } : {}),
-    }),
-    signal,
-  })
-
-  if (!response.ok) {
-    throw new Error(await readTtsErrorMessage(response))
+      voice: normalizedVoice,
+      lang: voiceInfo?.lang || "en-US",
+    })
+    return url
+  } catch (error: any) {
+    throw new Error(error.message || "TTS request failed")
   }
-
-  return response
 }

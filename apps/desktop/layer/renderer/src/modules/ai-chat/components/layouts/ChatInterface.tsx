@@ -11,6 +11,7 @@ import { useUserRole } from "@follow/store/user/hooks"
 import { tracker } from "@follow/tracker"
 import { detectIsEditableElement, nextFrame } from "@follow/utils"
 import type { ConfigResponse } from "@follow-app/client-sdk"
+import { useAtomValue } from "jotai"
 import type { EditorState } from "lexical"
 import { createEditor } from "lexical"
 import { nanoid } from "nanoid"
@@ -18,7 +19,7 @@ import type { RefObject } from "react"
 import { use, useEffect, useMemo, useRef, useState } from "react"
 import { useEventCallback, useEventListener } from "usehooks-ts"
 
-import { useAISettingKey } from "~/atoms/settings/ai"
+import { __aiSettingAtom, useAISettingKey } from "~/atoms/settings/ai"
 import { useActionLanguage } from "~/atoms/settings/general"
 import { ErrorBoundary } from "~/components/common/ErrorBoundary"
 import { ROUTE_FEED_IN_FOLDER } from "~/constants"
@@ -396,18 +397,20 @@ const useRateLimitInfo = (
   configuration: ConfigResponse | undefined,
   shouldHideResetDetails: boolean,
 ) => {
-  const isRateLimited = useMemo(
-    () => computeIsRateLimited(error, configuration),
-    [error, configuration],
-  )
+  const aiSettings = useAtomValue(__aiSettingAtom)
+  const isByokActive = (aiSettings?.byok?.providers?.length || 0) > 0
 
-  const rateLimitMessage = useMemo(
-    () =>
-      computeRateLimitMessage(error, configuration, {
-        hideResetDetails: shouldHideResetDetails,
-      }),
-    [error, configuration, shouldHideResetDetails],
-  )
+  const isRateLimited = useMemo(() => {
+    if (isByokActive) return false
+    return computeIsRateLimited(error, configuration)
+  }, [error, configuration, isByokActive])
+
+  const rateLimitMessage = useMemo(() => {
+    if (isByokActive) return null
+    return computeRateLimitMessage(error, configuration, {
+      hideResetDetails: shouldHideResetDetails,
+    })
+  }, [error, configuration, shouldHideResetDetails, isByokActive])
 
   return {
     isRateLimited,

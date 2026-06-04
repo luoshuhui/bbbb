@@ -2,24 +2,24 @@ packages:
   - apps/*
   - packages/**/*
   - apps/desktop/layer/*
-  - "!apps/mobile/native/example"
+  - '!apps/mobile/native/example'
   - apps/mobile/web-app
   - apps/mobile/web-app/html-renderer
-  - "!**/example"
-  - "!**/example/**"
+  - '!**/example'
+  - '!**/example/**'
 
 catalog:
-  "@follow-app/client-sdk": 0.3.95
-  "@folo-services/ai-tools": 0.2.66
+  '@follow-app/client-sdk': 0.3.95
+  '@folo-services/ai-tools': 0.2.66
   tailwindcss-uikit-colors: 1.0.0
   typescript: 5.9.3
 
 ignorePatchFailures: false
 
 onlyBuiltDependencies:
-  - "@firebase/util"
-  - "@tsslint/core"
-  - "@tsslint/eslint"
+  - '@firebase/util'
+  - '@tsslint/core'
+  - '@tsslint/eslint'
   - bufferutil
   - core-js
   - dtrace-provider
@@ -35,15 +35,15 @@ onlyBuiltDependencies:
   - utf-8-validate
 
 overrides:
-  "@electron/node-gyp": 10.2.0-electron.2
-  "@floating-ui/core": 1.7.2
-  "@floating-ui/dom": 1.7.2
-  "@floating-ui/react": 0.27.14
-  "@floating-ui/react-dom": 2.1.4
-  "@follow-app/client-sdk": 0.3.95
-  "@folo-services/drizzle": 0.1.47
-  "@react-native-menu/menu": 2.0.0
-  "@types/react": 19.2.14
+  '@electron/node-gyp': 10.2.0-electron.2
+  '@floating-ui/core': 1.7.2
+  '@floating-ui/dom': 1.7.2
+  '@floating-ui/react': 0.27.14
+  '@floating-ui/react-dom': 2.1.4
+  '@follow-app/client-sdk': 0.3.95
+  '@folo-services/drizzle': 0.1.47
+  '@react-native-menu/menu': 2.0.0
+  '@types/react': 19.2.14
   array-includes: npm:@nolyfill/array-includes@latest
   array.prototype.findlastindex: npm:@nolyfill/array.prototype.findlastindex@latest
   array.prototype.flat: npm:@nolyfill/array.prototype.flat@latest
@@ -70,9 +70,9 @@ overrides:
   string.prototype.matchall: npm:@nolyfill/string.prototype.matchall@latest
 
 patchedDependencies:
-  "@microflash/remark-callout-directives": patches/@microflash__remark-callout-directives.patch
-  "@mozilla/readability@0.6.0": patches/@mozilla__readability@0.6.0.patch
-  "@pengx17/electron-forge-maker-appimage": patches/@pengx17__electron-forge-maker-appimage.patch
+  '@microflash/remark-callout-directives': patches/@microflash__remark-callout-directives.patch
+  '@mozilla/readability@0.6.0': patches/@mozilla__readability@0.6.0.patch
+  '@pengx17/electron-forge-maker-appimage': patches/@pengx17__electron-forge-maker-appimage.patch
   daisyui@4.12.24: patches/daisyui@4.12.24.patch
   re-resizable@6.11.2: patches/re-resizable@6.11.2.patch
   react-native-sheet-transitions: patches/react-native-sheet-transitions.patch

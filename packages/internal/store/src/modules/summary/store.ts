@@ -137,6 +137,11 @@ class SummaryActions implements Resetable, Hydratable {
 
 export const summaryActions = new SummaryActions()
 
+let byokSummaryInterceptor: ((entryId: string, target: "content" | "readabilityContent", actionLanguage: SupportedActionLanguage) => Promise<string | null>) | null = null
+export const setByokSummaryInterceptor = (interceptor: typeof byokSummaryInterceptor) => {
+  byokSummaryInterceptor = interceptor
+}
+
 class SummarySyncService {
   private pendingPromises: Record<StatusID, Promise<string | null>> = {}
 
@@ -170,11 +175,20 @@ class SummarySyncService {
     })
 
     // Use Our AI to generate summary
-    const pendingPromise = api()
-      .ai.summary({
-        id: entryId,
-        language: toApiSupportedActionLanguage(actionLanguage),
-        target,
+    const pendingPromise = (async () => {
+      if (byokSummaryInterceptor) {
+        const result = await byokSummaryInterceptor(entryId, target, actionLanguage)
+        if (result) return result
+      }
+      return null
+    })()
+      .then((generatedSummary) => {
+        if (generatedSummary) return { code: 0 as const, data: generatedSummary, message: "ok" }
+        return api().ai.summary({
+          id: entryId,
+          language: toApiSupportedActionLanguage(actionLanguage),
+          target,
+        })
       })
       .then((summary) => {
         const generatedSummary = summary.data?.trim() ? summary.data : null

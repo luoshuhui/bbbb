@@ -19,6 +19,7 @@ const MAIN_ACTIONS = [
 
   COMMAND_ID.entry.readability,
 
+  COMMAND_ID.entry.toggleAITranslation,
   COMMAND_ID.entry.viewSourceContent,
   COMMAND_ID.entry.share,
 ]

@@ -13,6 +13,7 @@ import { toast } from "sonner"
 
 import { AudioPlayer, getAudioPlayerAtomValue } from "~/atoms/player"
 import { showPopover } from "~/atoms/popover"
+import { toggleShowAITranslationOnce } from "~/atoms/ai-translation"
 import {
   getShowSourceContent,
   toggleShowSourceContent,
@@ -363,6 +364,20 @@ export const useRegisterEntryCommands = () => {
             id: entryId,
             url: entryUrl,
           })
+        },
+      },
+      {
+        id: COMMAND_ID.entry.toggleAITranslation,
+        category,
+        label: {
+          title: t("entry_actions.toggle_ai_translation", "AI Translation"),
+          description: t("entry_actions.toggle_ai_translation_description", "Toggle AI translation for this entry"),
+        },
+        icon: (props) => (
+          <i className={cn("i-mgc-translate-2-cute-re", props?.isActive && "text-orange-500")} />
+        ),
+        run: async () => {
+          toggleShowAITranslationOnce()
         },
       },
     ],

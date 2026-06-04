@@ -88,6 +88,9 @@ Subscribe to a vast range of feeds and curated lists. Curate your favorites and 
 
 A smarter and more efficient browsing with AI-powered features like translation, summary, and more.
 
+- **Bring Your Own Key (BYOK)**: Connect your own custom AI provider endpoints to power AI features your way.
+- **Local Text-To-Speech (TTS)**: Seamlessly integrate with custom offline local TTS models (e.g. Kokoro, VITS) by configuring `LOCAL_TTS_MODEL_DIR` or picking your favorite local voices directly from Settings.
+
 ![](https://github.com/user-attachments/assets/37cf4f2f-4c5e-4775-86e8-2fa1a1b2ecf5)
 
 ### Dynamic Content Support
@@ -101,6 +104,49 @@ Because we know content is more than just text. From articles to videos, images 
 This isn’t just another app. Folo is a community — introducing a new era of openness and community-driven experience.
 
 ![](https://github.com/user-attachments/assets/62004a04-eaea-4f5d-bfbf-4e68b6b90286)
+
+## 🛠️ Build Locally
+
+If you want to build and compile Folo locally on your machine, you can follow these instructions:
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (Recommended v20+)
+- [pnpm](https://pnpm.io/)
+- Python and a C++ compiler (for native dependencies)
+
+### Installation
+
+1. Clone the repository and install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+2. Build the desktop app:
+   ```bash
+   # 切换到桌面端应用目录
+   cd apps/desktop
+
+   # 编译当前平台的应用 (Apple Silicon 默认编译为 macOS ARM)
+   # 注意：如果你在构建 DMG 镜像时遇到了 `macos-alias` 的原生 C++ 编译错误（如缺失 volume.node），
+   # 你可以跳过 DMG 构建过程，仅打包生成 ZIP 包和 .app 文件：
+   pnpm run build:electron-vite && npx electron-forge make --arch=arm64 --platform=darwin --targets @electron-forge/maker-zip
+   ```
+
+编译好的应用包（如 `.zip` 或 `.app`）会输出到 `apps/desktop/out/make/` 目录下。
+
+### 近期自定义修改
+
+- **自定义模型 (BYOK) UI 注入**：我们在 AI 模型选择的下拉菜单中直接注入了 "Bring Your Own Key" 选项。这使得你可以直接在界面上选择它，而不再受限于底层隐式覆盖逻辑，所见即所得。
+- **本地 TTS 引擎修复**：修复了因类型检查和验证机制导致的离线本地 TTS 模型初始化失败的问题。同时强制提升了环境变量 `LOCAL_TTS_MODEL_DIR` 的加载优先级。
+- **彻底剥离所有系统计划和额度限制，打造纯本地化客户端**：
+  - 完全移除了所有基于云端的“免费计划 (Free Plan)”和额度枷锁（例如最多只能订阅 150 个 RSS 等人为限制），实现纯本地 SQLite 存储，没有任何订阅数量或功能使用上限。
+  - 完全移除了使用总结、AI 助手等功能时的“高级计划(订阅)”弹窗以及点击拦截，所有功能皆可无障碍畅快使用。
+  - 前端的模型下拉框现已精简至只显示和选择用户配置的 BYOK（Bring Your Own Key）模型提供商，不再展示任何基于试用期的系统内置模型。并从设置页彻底清除了云端订阅额度的使用分析模块。
+- **修复与最新 AI SDK 的流式数据解析兼容性**：修正了向 BYOK 模型发送聊天和总结请求时缺失 `/chat/completions` 的问题，并在 `transport.ts` 中针对最新版 Vercel AI SDK Data Stream 协议补齐了缺失的 `text-start` 前置声明和必需的 `id` 与 `delta` 字段，彻底解决了流式输出时的 Zod Schema 校验解析失败 (`invalid_type` / `unrecognized_keys`) 报错问题，确保文本的顺畅生成与展示。
+- **优化 AI 翻译与双语对照体验**：增加了独立的“AI 翻译开关”，只在开启时才在文章顶部显示翻译按钮，支持点击按需翻译与还原。同时修复了双语对照模式下原文丢失的问题，完美呈现中外文对照排版。
+- **拓展 AI 模型提供商与本地大模型支持**：新增了对 `Ollama` 模型提供商和对应模型名称的完整支持，并将底层网络请求的超时时间大幅延长至 5 分钟，完美兼容本地运行较慢的大型语言模型。
+- **解除 YouTube 反机器人拦截**：彻底修复了在内置 WebView 中播放 YouTube 视频时被拦截识别为“聊天机器人”的问题。通过在所有相关的 `<webview>` 组件级标签上强制注入最纯净的新版 Chrome User-Agent，从源头上隐蔽了 Electron 等应用外壳环境特征。
 
 ## 🤝 Contributing
 

@@ -337,42 +337,22 @@ export const playEntryTts = async (entryId: string, { toastTitle }: { toastTitle
 
     const { voice } = getGeneralSettings()
     const response = await requestTts({
+      id: entryId,
       text,
       voice,
       signal: abortController.signal,
     })
 
-    let handled = false
-    if (response.body && getAudioContextConstructor()) {
-      AudioPlayer.mount({
-        type: "audio",
-        entryId,
-        src: STREAM_PLACEHOLDER_SRC,
-        currentTime: 0,
-      })
-
-      const streamingHandle = createAudioContextStreamingHandle(
-        response,
-        entryId,
-        abortController.signal,
-      )
-
-      if (streamingHandle) {
-        activeTtsCleanup = streamingHandle.cleanup
-        handled = true
-      }
+    if (!response) {
+      throw new Error("Failed to generate TTS audio")
     }
 
-    if (!handled) {
-      const bufferedHandle = await createBufferedTtsHandle(response, abortController.signal)
-      AudioPlayer.mount({
-        type: "audio",
-        entryId,
-        src: bufferedHandle.url,
-        currentTime: 0,
-      })
-      activeTtsCleanup = bufferedHandle.cleanup
-    }
+    AudioPlayer.mount({
+      type: "audio",
+      entryId,
+      src: response,
+      currentTime: 0,
+    })
   } catch (error) {
     if (abortController.signal.aborted) {
       return

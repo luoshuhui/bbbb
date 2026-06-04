@@ -36,7 +36,15 @@ const ymlMapsMap = {
   win32: "latest.yml",
 }
 
-const keepModules = new Set(["font-list", "vscode-languagedetection"])
+const keepModules = new Set([
+  "font-list",
+  "vscode-languagedetection",
+  "sherpa-onnx-node",
+  "sherpa-onnx-darwin-arm64",
+  "sherpa-onnx-darwin-x64",
+  "sherpa-onnx-win-x64",
+  "sherpa-onnx-linux-x64"
+])
 const keepLanguages = new Set(["en", "en_GB", "en-US", "en_US"])
 
 // remove folders & files not to be included in the app
@@ -73,13 +81,14 @@ async function cleanSources(buildPath, _electronVersion, platform, _arch, callba
   // copy needed node_modules to be included in the app
   await Promise.all(
     Array.from(keepModules.values()).map((item) => {
-      // Check is exist
-      if (fs.existsSync(path.join(buildPath, "node_modules", item))) {
+      // Check if it exists in destination or if source doesn't exist
+      const sourcePath = path.join(process.cwd(), "../../node_modules", item)
+      if (fs.existsSync(path.join(buildPath, "node_modules", item)) || !fs.existsSync(sourcePath)) {
         // eslint-disable-next-line array-callback-return
         return
       }
       return cp(
-        path.join(process.cwd(), "../../node_modules", item),
+        sourcePath,
         path.join(buildPath, "node_modules", item),
         {
           recursive: true,
@@ -118,7 +127,9 @@ const config: ForgeConfig = {
       cleanSources,
       process.platform !== "win32" ? noopAfterCopy : setLanguages([...keepLanguages.values()]),
     ],
-    asar: true,
+    asar: {
+      unpack: "**/node_modules/sherpa-onnx-{node,darwin-arm64,darwin-x64,win-x64,linux-x64}/**/*",
+    },
     ignore: [ignorePattern],
 
     prune: false,
